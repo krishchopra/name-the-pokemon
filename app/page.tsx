@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { getRandomPokemon } from "./utils/getRandomPokemon";
 
+export const revalidate = 0; // disables caching for this page -- consider taking out in future!
+
 export default async function Home() {
   const { selectedPokemon, imageUrl } = await getRandomPokemon();
 
