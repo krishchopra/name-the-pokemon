@@ -1,12 +1,25 @@
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { pokemonData } from "./components/data";
 
 export default function Home() {
-  const pokemonNames = Object.keys(pokemonData);
-  const randomPokemon = pokemonNames[Math.floor(Math.random() * pokemonNames.length)];
-  const randomPokemonNumber = pokemonData[randomPokemon];
-  const randomPokemonNumberString = randomPokemonNumber.toString().padStart(3, '0');
-  const imageUrl = `https://www.pokemon.com/static-assets/content-assets/cms2/img/pokedex/detail/${randomPokemonNumberString}.png`;
+  const [randomPokemon, setRandomPokemon] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const pokemonNames = Object.keys(pokemonData);
+    const selectedPokemon = pokemonNames[Math.floor(Math.random() * pokemonNames.length)];
+    const randomPokemonNumber = pokemonData[selectedPokemon];
+    const randomPokemonNumberString = randomPokemonNumber.toString().padStart(3, '0');
+    const imageUrl = `https://www.pokemon.com/static-assets/content-assets/cms2/img/pokedex/detail/${randomPokemonNumberString}.png`;
+
+    setRandomPokemon(selectedPokemon);
+    setImageUrl(imageUrl);
+  }, []);
+
+  if (!randomPokemon || !imageUrl) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
