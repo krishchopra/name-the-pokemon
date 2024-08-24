@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface MultipleChoiceProps {
   correctAnswer: string;
   allPokemon: string[];
+  imageUrl: string;
 }
 
-export default function MultipleChoice({ correctAnswer, allPokemon }: MultipleChoiceProps) {
+export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: MultipleChoiceProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
@@ -48,7 +50,18 @@ export default function MultipleChoice({ correctAnswer, allPokemon }: MultipleCh
   };
 
   return (
-    <div>
+    <div className="text-center">
+      <h1 className="text-4xl font-bold mb-4">Who's that Pokémon?</h1>
+      <div className="flex justify-center mt-4 mb-4 relative">
+        <Image
+          key={imageUrl}
+          src={imageUrl}
+          alt={correctAnswer}
+          width={200}
+          height={200}
+          className="animate-fade-in"
+        />
+      </div>
       <div className="grid grid-cols-2 gap-4 mt-4">
         {options.map((option) => (
           <button

@@ -31,3 +31,18 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
