@@ -30,7 +30,7 @@ export const pokemonData: Record<string, number> = {
     "Nidoran ♀": 29,
     "Nidorina": 30,
     "Nidoqueen": 31,
-    "Nidoran♂": 32,
+    "Nidoran ♂": 32,
     "Nidorino": 33,
     "Nidoking": 34,
     "Clefairy": 35,

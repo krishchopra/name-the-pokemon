@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import TimerAndScore from './TimerAndScore';
 
 interface MultipleChoiceProps {
   correctAnswer: string;
@@ -14,13 +15,29 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
+  const [timeLeft, setTimeLeft] = useState(10);
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(1);
+  const [gameOver, setGameOver] = useState(false);
   const router = useRouter();
+
+  const totalQuestions = 10;
 
   useEffect(() => {
     setOptions(generateOptions());
     setSelectedOption(null);
     setIsRevealed(false);
+    setTimeLeft(10);
   }, [correctAnswer, allPokemon]);
+
+  useEffect(() => {
+    if (timeLeft > 0 && !isRevealed) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (timeLeft === 0 && !isRevealed) {
+      setIsRevealed(true);
+    }
+  }, [timeLeft, isRevealed]);
 
   const generateOptions = () => {
     const newOptions = [correctAnswer];
@@ -34,8 +51,20 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
   };
 
   const handleOptionClick = (option: string) => {
+    if (isRevealed) return;
     setSelectedOption(option);
     setIsRevealed(true);
+    if (option === correctAnswer) {
+      let pointsEarned;
+      if (currentQuestion === totalQuestions) {
+        // for the last question, max points is 40
+        pointsEarned = timeLeft >= 8 ? 40 : Math.max(39 - (9 - timeLeft), 20);
+      } else {
+        // for other questions, max points is 20
+        pointsEarned = timeLeft >= 8 ? 20 : Math.max(19 - (9 - timeLeft), 10);
+      }
+      setScore(score + pointsEarned);
+    }
   };
 
   const getOptionClass = (option: string) => {
@@ -46,12 +75,23 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
   };
 
   const handleNewPokemon = () => {
-    router.refresh();
+    if (currentQuestion < totalQuestions) {
+      setCurrentQuestion(currentQuestion + 1);
+      router.refresh();
+    } else {
+      setGameOver(true);
+    }
   };
 
   return (
     <div className="text-center">
-      <h1 className="text-4xl font-bold mb-4">Who&apos;s that Pokémon?</h1>
+      <TimerAndScore 
+        timeLeft={timeLeft} 
+        score={score} 
+        totalQuestions={totalQuestions} 
+        currentQuestion={currentQuestion} 
+      />
+      <h1 className="text-3xl font-bold mb-4">Who&apos;s that Pokémon?</h1>
       <div className="flex justify-center mt-8 mb-4 relative">
         <Image
           key={imageUrl}
@@ -74,13 +114,26 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
           </button>
         ))}
       </div>
-      {isRevealed && (
+      {isRevealed && !gameOver && (
         <button
           onClick={handleNewPokemon}
           className="mt-10 p-2 mx-2 bg-blue-700 text-white rounded hover:bg-blue-900"
         >
-          New Pokémon
+          {currentQuestion < totalQuestions ? "Next Pokémon" : "Finish Game"}
         </button>
+      )}
+      {gameOver && (
+        <div>
+          <p className="mt-10 text-lg">
+            <span className="font-bold">Game over!</span> Your final score is {score} out of 220.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 p-2 mx-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            New Game
+          </button>
+        </div>
       )}
     </div>
   );
