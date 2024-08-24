@@ -20,21 +20,14 @@ export default function BackgroundMusic() {
     audioRef.current = new Audio('/sound/pokemon-theme.mp3');
     audioRef.current.loop = true;
     audioRef.current.volume = volume;
+
     if (isPlaying) {
       audioRef.current.play();
     }
+
     return () => {
       audioRef.current?.pause();
     };
-  }, []);
-
-  useEffect(() => {
-    if (isPlaying) {
-      audioRef.current?.play();
-    } else {
-      audioRef.current?.pause();
-    }
-    localStorage.setItem('musicPlaying', isPlaying.toString());
   }, [isPlaying]);
 
   useEffect(() => {

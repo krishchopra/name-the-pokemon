@@ -5,15 +5,22 @@ interface DoublePointsAlertProps {
 }
 
 export default function DoublePointsAlert({ onFinish }: DoublePointsAlertProps) {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const showTimer = setTimeout(() => {
+      setVisible(true);
+    }, 500);
+
+    const hideTimer = setTimeout(() => {
       setVisible(false);
       setTimeout(onFinish, 1000); // wait for fade-out animation before calling onFinish
-    }, 3000);
+    }, 3500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
   }, [onFinish]);
 
   return (
