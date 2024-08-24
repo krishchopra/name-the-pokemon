@@ -12,11 +12,9 @@ interface MultipleChoiceProps {
   correctAnswer: string;
   allPokemon: string[];
   imageUrl: string;
-  onScoreUpdate?: (score: number) => void;
-  isMultiplayer?: boolean;
 }
 
-export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl, onScoreUpdate, isMultiplayer }: MultipleChoiceProps) {
+export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: MultipleChoiceProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
@@ -77,9 +75,6 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl, on
       }
       
       setScore(score + pointsEarned);
-      if (isMultiplayer && onScoreUpdate) {
-        onScoreUpdate(score + pointsEarned);
-      }
       soundEffectsRef.current?.playCorrectSound();
     } else {
       soundEffectsRef.current?.playWrongSound();
@@ -173,3 +168,4 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl, on
     </div>
   );
 }
+
