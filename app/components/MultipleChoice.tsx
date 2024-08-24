@@ -51,8 +51,8 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
 
   return (
     <div className="text-center">
-      <h1 className="text-4xl font-bold mb-4">Who's that Pokémon?</h1>
-      <div className="flex justify-center mt-4 mb-4 relative">
+      <h1 className="text-4xl font-bold mb-4">Who&apos;s that Pokémon?</h1>
+      <div className="flex justify-center mt-8 mb-4 relative">
         <Image
           key={imageUrl}
           src={imageUrl}
@@ -62,7 +62,7 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
           className="animate-fade-in"
         />
       </div>
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-2 gap-4 mt-8">
         {options.map((option) => (
           <button
             key={option}
