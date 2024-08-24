@@ -16,7 +16,7 @@ export default function TimerAndScore({ timeLeft, score, totalQuestions, current
         <div className="mx-4"><span className="font-bold">Score:</span> {score}</div>
         <div className="mx-4"><span className="font-bold">Question:</span> {currentQuestion}/{totalQuestions}</div>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+      <div className="w-full bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
         <div 
           className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
           style={{ width: `${progressPercentage}%` }}

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { pokemonData } from "./utils/data";
 import MultipleChoice from "./components/MultipleChoice";
 import { getServerSidePokemon } from "./utils/getServerSidePokemon";
@@ -15,3 +14,7 @@ export default async function Home() {
     </main>
   );
 }
+
+// note to self: try to make it all display on one page on mobile! and multiplayer mode!
+
+// note to self: game is too easy to get perfect score - make it harder (less lenient on time)
