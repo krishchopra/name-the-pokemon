@@ -15,5 +15,3 @@ export default async function Home() {
     </main>
   );
 }
-
-// note to self: fix lag when rendering pokemon images!

@@ -39,10 +39,10 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
   };
 
   const getOptionClass = (option: string) => {
-    if (!isRevealed) return 'bg-blue-500 hover:bg-blue-600';
-    if (option === correctAnswer) return 'bg-green-500';
-    if (option === selectedOption) return 'bg-red-500';
-    return 'bg-gray-300';
+    if (!isRevealed) return 'bg-blue-700 hover:bg-blue-900';
+    if (option === correctAnswer) return 'bg-green-600';
+    if (option === selectedOption) return 'bg-red-600';
+    return 'bg-gray-500';
   };
 
   const handleNewPokemon = () => {
@@ -68,7 +68,7 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
             key={option}
             onClick={() => handleOptionClick(option)}
             disabled={isRevealed}
-            className={`p-2 text-white rounded ${getOptionClass(option)}`}
+            className={`p-2 text-white rounded min-w-[225px] ${getOptionClass(option)}`}
           >
             {option}
           </button>
@@ -77,7 +77,7 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
       {isRevealed && (
         <button
           onClick={handleNewPokemon}
-          className="mt-10 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="mt-10 p-2 mx-2 bg-blue-700 text-white rounded hover:bg-blue-900"
         >
           New Pokémon
         </button>
