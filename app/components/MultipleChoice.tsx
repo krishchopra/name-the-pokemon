@@ -62,13 +62,13 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
           className="animate-fade-in"
         />
       </div>
-      <div className="grid grid-cols-2 gap-4 mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
         {options.map((option) => (
           <button
             key={option}
             onClick={() => handleOptionClick(option)}
             disabled={isRevealed}
-            className={`p-2 text-white rounded min-w-[225px] ${getOptionClass(option)}`}
+            className={`p-2 text-white rounded min-w-[200px] ${getOptionClass(option)}`}
           >
             {option}
           </button>
