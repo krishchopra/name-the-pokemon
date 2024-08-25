@@ -12,7 +12,7 @@ export default function Home() {
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4 mt-4">How to Play:</h2>
         <ul className="list-disc text-xl text-left inline-block">
-          <li>You'll be shown an image of a Pokémon</li>
+          <li>You&apos;ll be shown an image of a Pokémon</li>
           <li>Choose the correct name from four options</li>
           <li>Answer quickly for more points</li>
           <li>Try to get the highest score possible!</li>
