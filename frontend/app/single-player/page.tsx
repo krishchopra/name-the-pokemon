@@ -2,7 +2,7 @@ import { pokemonData } from "../utils/data";
 import MultipleChoice from "../components/MultipleChoice";
 import { getServerSidePokemon } from "../utils/getServerSidePokemon";
 
-export const revalidate = 0; // disables caching for this page -- consider taking out in future!
+export const revalidate = 0; // disables caching for this page -- consider taking out in the future!
 
 export default async function Home() {
   const { selectedPokemon, imageUrl } = await getServerSidePokemon();
