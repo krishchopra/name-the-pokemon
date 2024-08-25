@@ -808,6 +808,9 @@ export const pokemonData: Record<string, number> = {
     "Zeraora": 807,
     "Meltan": 808,
     "Melmetal": 809
+
+    // I don't really know the Pokémon after Generation 7 too well, so....not including them for now!
+
     // "Grookey": 810,
     // "Thwackey": 811,
     // "Rillaboom": 812,

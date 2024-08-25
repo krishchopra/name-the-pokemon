@@ -1,20 +1,26 @@
-import { pokemonData } from "./utils/data";
-import MultipleChoice from "./components/MultipleChoice";
-import { getServerSidePokemon } from "./utils/getServerSidePokemon";
+import Link from 'next/link';
+import BackgroundMusic from './components/BackgroundMusic';
 
-export const revalidate = 0; // disables caching for this page -- consider taking out in future!
-
-export default async function Home() {
-  const { selectedPokemon, imageUrl } = await getServerSidePokemon();
-  const allPokemon = Object.keys(pokemonData);
-
+export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <MultipleChoice correctAnswer={selectedPokemon} allPokemon={allPokemon} imageUrl={imageUrl} />
+    <main className="flex min-h-screen flex-col items-center justify-center p-24 text-center">
+      <BackgroundMusic />
+      <h1 className="text-4xl font-bold mb-6">Name the Pokémon!</h1>
+      <p className="text-xl mb-8 max-w-2xl">
+        Test your Pokémon knowledge with this exciting game! Identify Pokémon from their images, and earn points. Can you name them all?
+      </p>
+      <div className="mb-8">
+        <h2 className="text-2xl font-semibold mb-4 mt-4">How to Play:</h2>
+        <ul className="list-disc text-xl text-left inline-block">
+          <li>You'll be shown an image of a Pokémon</li>
+          <li>Choose the correct name from four options</li>
+          <li>Answer quickly for more points</li>
+          <li>Try to get the highest score possible!</li>
+        </ul>
+      </div>
+      <Link href="/single-player" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-xl transition duration-300 mt-5">
+        Start Game
+      </Link>
     </main>
   );
 }
-
-// note to self: try to make it all display on one page on mobile! and multiplayer mode!
-
-// note to self: game is too easy to get perfect score - make it harder (less lenient on time)

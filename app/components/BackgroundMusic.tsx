@@ -47,7 +47,7 @@ export default function BackgroundMusic() {
   };
 
   return (
-    <div className="fixed top-4 right-4 flex items-center">
+    <div className="absolute top-4 right-4 flex items-center">
       <input
         type="range"
         min="0"
