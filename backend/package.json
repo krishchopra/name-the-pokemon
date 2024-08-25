@@ -4,7 +4,7 @@
     "build": "tsc",
     "dev": "ts-node ./src/app.ts",
     "format": "prettier --write . --ignore-path .gitignore",
-    "start": "node ./dist/app.js"
+    "start": "ts-node ./src/app.ts"
   },
   "dependencies": {
     "express": "^4.19.2"
