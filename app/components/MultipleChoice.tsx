@@ -117,8 +117,7 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
             totalQuestions={totalQuestions} 
             currentQuestion={currentQuestion} 
           />
-          <h1 className="text-3xl font-bold mb-4">Who&apos;s that Pokémon?</h1>
-          <div className="flex justify-center mt-8 mb-4 relative">
+          <div className="flex justify-center mt-4 mb-4 relative"> 
             <Image
               key={imageUrl}
               src={imageUrl}
@@ -168,4 +167,5 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
     </div>
   );
 }
+
 

@@ -13,29 +13,38 @@ export default function BackgroundMusic() {
       const savedVolume = parseFloat(localStorage.getItem('musicVolume') || '0.1');
       setIsPlaying(savedIsPlaying);
       setVolume(savedVolume);
-    }
-  }, []);
 
-  useEffect(() => {
-    audioRef.current = new Audio('/sound/pokemon-theme.mp3');
-    audioRef.current.loop = true;
-    audioRef.current.volume = volume;
+      audioRef.current = new Audio('/sound/pokemon-theme.mp3');
+      audioRef.current.loop = true;
+      audioRef.current.volume = savedVolume;
 
-    if (isPlaying) {
-      audioRef.current.play();
+      if (savedIsPlaying) {
+        audioRef.current.play().catch(error => console.error("Audio playback failed:", error));
+      }
     }
 
     return () => {
       audioRef.current?.pause();
     };
-  }, [isPlaying]);
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
+      localStorage.setItem('musicVolume', volume.toString());
     }
-    localStorage.setItem('musicVolume', volume.toString());
   }, [volume]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play().catch(error => console.error("Audio playback failed:", error));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+    localStorage.setItem('musicPlaying', isPlaying.toString());
+  }, [isPlaying]);
 
   const toggleMusic = () => {
     setIsPlaying(!isPlaying);
@@ -52,7 +61,7 @@ export default function BackgroundMusic() {
         type="range"
         min="0"
         max="1"
-        step="0.1"
+        step="any"
         value={volume}
         onChange={handleVolumeChange}
         className="mr-2" // make it yellow!
@@ -66,3 +75,4 @@ export default function BackgroundMusic() {
     </div>
   );
 }
+
