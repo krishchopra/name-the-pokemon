@@ -11,9 +11,8 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV === 'production'
-      ? "https://namethepokemon.vercel.app"
-      : "http://localhost:3000",
+    // origin: "http://localhost:3000", -- for testing
+    origin: "https://namethepokemon.vercel.app",
     methods: ["GET", "POST"],
   },
 });

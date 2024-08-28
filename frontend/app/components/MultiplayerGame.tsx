@@ -30,10 +30,8 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
 
   useEffect(() => {
     console.log('Initializing socket connection');
-    const socketUrl = process.env.NODE_ENV === 'production'
-      ? "https://name-the-pokemon.onrender.com"
-      : "http://localhost:3001";
-    const newSocket = io(socketUrl);
+    const newSocket = io("https://name-the-pokemon.onrender.com");
+    // const newSocket = io("http://localhost:3001");  -- for testing
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
