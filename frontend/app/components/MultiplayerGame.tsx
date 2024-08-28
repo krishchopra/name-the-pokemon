@@ -17,12 +17,12 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [isRevealed, setIsRevealed] = useState(false);
   const [timeLeft, setTimeLeft] = useState(10);
   const [currentQuestion, setCurrentQuestion] = useState(1);
-  const [gameOver, setGameOver] = useState(false);
   const [gameStatus, setGameStatus] = useState<'waiting' | 'playing' | 'finished'>('waiting');
   const router = useRouter();
   const soundEffectsRef = useRef<{ playCorrectSound: () => void; playWrongSound: () => void } | null>(null);
   const [showDoublePointsAlert, setShowDoublePointsAlert] = useState(false);
   const [correctAnswer, setCorrectAnswer] = useState<string>('');
+  const [allPlayersFinished, setAllPlayersFinished] = useState(false);
 
   const totalQuestions = 10;
   const maxScore = 220;
@@ -30,7 +30,10 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
 
   useEffect(() => {
     console.log('Initializing socket connection');
-    const newSocket = io("http://localhost:3001");
+    const socketUrl = process.env.NODE_ENV === 'production'
+      ? "https://name-the-pokemon.onrender.com"
+      : "http://localhost:3001";
+    const newSocket = io(socketUrl);
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
@@ -62,21 +65,24 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     newSocket.on('newRound', (data) => {
       console.log('New round:', data);
       setCurrentQuestion(data.currentQuestion);
-      setImageUrl(data.imageUrl);
       setOptions(data.options);
       setSelectedOption(null);
       setIsRevealed(false);
       setTimeLeft(10);
+      setCorrectAnswer(data.correctAnswer);
+
       if (data.currentQuestion === totalQuestions) {
         setShowDoublePointsAlert(true);
-        setTimeout(() => setShowDoublePointsAlert(false), 4500);
+        setTimeout(() => {
+          setShowDoublePointsAlert(false);
+          setImageUrl(data.imageUrl);
+        }, 4500);
       } else {
-        setShowDoublePointsAlert(false);
+        setImageUrl(data.imageUrl);
       }
-      setCorrectAnswer(data.correctAnswer);
+
       if (data.currentQuestion > totalQuestions) {
-        setGameOver(true);
-        setGameStatus('finished');
+        setAllPlayersFinished(true);
       }
     });
 
@@ -123,6 +129,10 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       console.error('Socket error:', error);
     });
 
+    newSocket.on('gameFinished', () => {
+      setAllPlayersFinished(true);
+    });
+
     return () => {
       console.log('Cleaning up socket connection');
       newSocket.disconnect();
@@ -130,13 +140,13 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
   }, [gameId]);
 
   useEffect(() => {
-    if (timeLeft > 0 && !isRevealed && gameStatus === 'playing') {
+    if (timeLeft > 0 && !isRevealed && gameStatus === 'playing' && !showDoublePointsAlert) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
     } else if (timeLeft === 0 && !isRevealed && gameStatus === 'playing') {
       handleOptionClick(null);
     }
-  }, [timeLeft, isRevealed, gameStatus]);
+  }, [timeLeft, isRevealed, gameStatus, showDoublePointsAlert]);
 
   const handleOptionClick = (option: string | null) => {
     if (isRevealed || gameStatus !== 'playing') return;
@@ -197,7 +207,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           alt="Pokemon"
           width={200}
           height={200}
-          className="animate-fade-in"
+          className={`animate-fade-in ${showDoublePointsAlert ? 'invisible' : 'visible'}`}
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
@@ -229,7 +239,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           ></div>
         </div>
       </div>
-      {(isRevealed && currentQuestion === totalQuestions) || gameOver ? (
+      {allPlayersFinished && (
         <div>
           <p className="mt-8 text-lg">
             <span className="font-bold">Game over!</span> 
@@ -246,7 +256,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
             New Game
           </button>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

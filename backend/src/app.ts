@@ -11,10 +11,9 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    // origin: process.env.NODE_ENV === 'production'
-    //   ? "https://namethepokemon.vercel.app/"
-    //   : "http://localhost:3000",
-    origin: "http://localhost:3000",
+    origin: process.env.NODE_ENV === 'production'
+      ? "https://namethepokemon.vercel.app"
+      : "http://localhost:3000",
     methods: ["GET", "POST"],
   },
 });
@@ -98,7 +97,11 @@ io.on("connection", (socket) => {
 
         if (game.answeredPlayers.length === game.players.length) {
           io.to(gameId).emit("allPlayersAnswered", { correctAnswer: game.currentPokemon });
-          setTimeout(() => nextRound(gameId), 3000);
+          if (game.currentQuestion >= game.totalQuestions) {
+            io.to(gameId).emit("gameFinished");
+          } else {
+            setTimeout(() => nextRound(gameId), 3000);
+          }
         }
       }
     }
