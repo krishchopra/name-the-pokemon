@@ -18,9 +18,14 @@ export default function Home() {
           <li>Try to get the highest score possible!</li>
         </ul>
       </div>
-      <Link href="/single-player" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-xl transition duration-300 mt-5">
-        Start Game
-      </Link>
+      <div className="flex space-x-4 mt-5">
+        <Link href="/single-player" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-xl transition duration-300">
+          Single Player
+        </Link>
+        <Link href="/multiplayer" className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full text-xl transition duration-300">
+          Multiplayer
+        </Link>
+      </div>
     </main>
   );
 }
