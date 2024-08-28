@@ -1,6 +1,6 @@
 {
-  "/multiplayer/page": "app/multiplayer/page.js",
   "/multiplayer/[gameId]/page": "app/multiplayer/[gameId]/page.js",
+  "/multiplayer/page": "app/multiplayer/page.js",
   "/single-player/page": "app/single-player/page.js",
-  "/icon.ico/route": "app/icon.ico/route.js"
+  "/page": "app/page.js"
 }

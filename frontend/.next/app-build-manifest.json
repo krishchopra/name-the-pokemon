@@ -16,6 +16,11 @@
       "static/chunks/main-app.js",
       "static/chunks/app/multiplayer/page.js"
     ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
     "/single-player/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

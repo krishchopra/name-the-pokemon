@@ -68,17 +68,29 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("submitAnswer", ({ gameId, answer }) => {
-    console.log('Answer submitted:', gameId, answer, 'from socket:', socket.id);
+  socket.on("submitAnswer", ({ gameId, answer, timeLeft }) => {
+    console.log('Answer submitted:', gameId, answer, 'from socket:', socket.id, 'Time left:', timeLeft);
     const game = games.get(gameId);
     if (game && !game.answeredPlayers.includes(socket.id)) {
       const player = game.players.find((p) => p.id === socket.id);
       if (player) {
         game.answeredPlayers.push(socket.id);
         if (answer && answer.toLowerCase() === game.currentPokemon.toLowerCase()) {
-          player.score += 1;
-          console.log('Correct answer:', gameId, 'Player:', socket.id, 'New score:', player.score);
-          io.to(gameId).emit("correctAnswer", { playerId: socket.id, score: player.score, correctAnswer: game.currentPokemon });
+          let pointsEarned: number;
+          if (timeLeft >= 9) {
+            pointsEarned = 20;
+          } else {
+            pointsEarned = timeLeft + 11;
+          }
+          
+          // double the points for the last question
+          if (game.currentQuestion === game.totalQuestions) {
+            pointsEarned *= 2;
+          }
+          
+          player.score += pointsEarned;
+          console.log('Correct answer:', gameId, 'Player:', socket.id, 'Points earned:', pointsEarned, 'New score:', player.score);
+          io.to(gameId).emit("correctAnswer", { playerId: socket.id, score: player.score, pointsEarned, correctAnswer: game.currentPokemon });
         } else {
           console.log('Incorrect answer:', gameId, 'Player:', socket.id);
           io.to(gameId).emit("incorrectAnswer", { playerId: socket.id });
@@ -99,13 +111,15 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
     Array.from(games.entries()).forEach(([gameId, game]) => {
-      game.players = game.players.filter((p) => p.id !== socket.id);
-      if (game.players.length === 0) {
-        console.log('Game deleted:', gameId);
-        games.delete(gameId);
-      } else {
+      const playerIndex = game.players.findIndex(p => p.id === socket.id);
+      if (playerIndex !== -1) {
+        game.players.splice(playerIndex, 1);
         console.log('Player left game:', gameId, 'Remaining players:', game.players);
-        io.to(gameId).emit("playerLeft", { players: game.players });
+        io.to(gameId).emit("playerLeft", { gameId, players: game.players });
+        if (game.players.length === 0) {
+          console.log('Game deleted:', gameId);
+          games.delete(gameId);
+        }
       }
     });
   });

@@ -35,7 +35,7 @@ export default function MultiplayerPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24 text-center">
-      <h1 className="text-4xl font-bold mb-6">Multiplayer - Name the Pokémon</h1>
+      <h1 className="text-4xl font-bold mb-10">Multiplayer - Name the Pokémon</h1>
       <div className="space-y-4">
         <button
           onClick={createGame}
@@ -49,7 +49,7 @@ export default function MultiplayerPage() {
             value={gameId}
             onChange={(e) => setGameId(e.target.value)}
             placeholder="Enter Game ID"
-            className="border-2 border-gray-300 text-black bg-white h-10 px-5 rounded-lg text-sm focus:outline-none"
+            className="border-2 border-gray-300 text-black bg-white h-10 px-5 rounded-lg text-md focus:outline-none"
           />
           <button
             onClick={joinGame}

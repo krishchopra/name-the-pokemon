@@ -61,12 +61,10 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
     setIsRevealed(true);
     if (option === correctAnswer) {
       let pointsEarned;
-      if (timeLeft >= 8.5) {
+      if (timeLeft >= 9) {
         pointsEarned = 20;
-      } else if (timeLeft >= 8) {
-        pointsEarned = 19;
       } else {
-        pointsEarned = Math.max(18 - Math.floor(10 - timeLeft), 1);
+        pointsEarned = timeLeft + 11;
       }
       
       // double the points for the last question

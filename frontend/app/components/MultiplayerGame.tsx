@@ -3,6 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useRouter } from 'next/navigation';
+import DoublePointsAlert from './DoublePointsAlert';
+import SoundEffects from './SoundEffects';
+import BackgroundMusic from './BackgroundMusic';
+import Image from 'next/image';
 
 export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -21,6 +25,8 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [correctAnswer, setCorrectAnswer] = useState<string>('');
 
   const totalQuestions = 10;
+  const maxScore = 220;
+  const calculateProgressPercentage = (score: number) => (score / maxScore) * 100;
 
   useEffect(() => {
     console.log('Initializing socket connection');
@@ -61,7 +67,12 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       setSelectedOption(null);
       setIsRevealed(false);
       setTimeLeft(10);
-      setShowDoublePointsAlert(data.currentQuestion === totalQuestions);
+      if (data.currentQuestion === totalQuestions) {
+        setShowDoublePointsAlert(true);
+        setTimeout(() => setShowDoublePointsAlert(false), 4500);
+      } else {
+        setShowDoublePointsAlert(false);
+      }
       setCorrectAnswer(data.correctAnswer);
       if (data.currentQuestion > totalQuestions) {
         setGameOver(true);
@@ -95,9 +106,11 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
 
     newSocket.on('playerLeft', (data) => {
       console.log('Player left:', data);
-      setPlayers(data.players);
-      if (data.players.length < 2) {
-        setGameStatus('finished');
+      if (data.gameId === gameId) {
+        setPlayers(data.players);
+        if (data.players.length < 2) {
+          setGameStatus('finished');
+        }
       }
     });
 
@@ -117,13 +130,6 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
   }, [gameId]);
 
   useEffect(() => {
-    soundEffectsRef.current = {
-      playCorrectSound: () => new Audio('/sound/correct.mp3').play(),
-      playWrongSound: () => new Audio('/sound/wrong.mp3').play(),
-    };
-  }, []);
-
-  useEffect(() => {
     if (timeLeft > 0 && !isRevealed && gameStatus === 'playing') {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
@@ -141,8 +147,8 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
 
   const submitAnswer = (option: string | null) => {
     if (socket) {
-      console.log('Submitting answer for question:', currentQuestion);
-      socket.emit('submitAnswer', { gameId, answer: option, currentQuestion });
+      console.log('Submitting answer for question:', currentQuestion, 'Time left:', timeLeft);
+      socket.emit('submitAnswer', { gameId, answer: option, currentQuestion, timeLeft });
     }
   };
 
@@ -165,65 +171,77 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
   }
 
   return (
-    <div className="text-center">
-      <h1 className="text-2xl font-bold mb-4">Name that Pokémon!</h1>
+    <div className="text-center -mt-7">
+      <BackgroundMusic />
+      <SoundEffects ref={soundEffectsRef} />
       {showDoublePointsAlert && (
-        <div className="bg-yellow-400 text-black p-2 mb-4 rounded">
-          Final Question: 2x Points!
-        </div>
+        <DoublePointsAlert onFinish={() => setShowDoublePointsAlert(false)} />
       )}
-      <div className="mb-4">
-        {players.map((player, index) => (
-          <div key={player.id} className="mb-2">
-            <p>Player {index + 1}: {player.score} points</p>
-            <div className="w-full bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
-              <div className="bg-blue-600 h-2.5 rounded-full" style={{width: `${(player.score / (totalQuestions * 10)) * 100}%`}}></div>
-            </div>
-          </div>
-        ))}
+      <div className="flex justify-between mb-8 bg-gray-500 rounded">
+        <p className="text-white px-3 py-1 rounded"><span className="font-bold">Time:</span> {timeLeft}s</p>
+        <p className="text-white px-3 py-1 rounded"><span className="font-bold">Question:</span> {currentQuestion}/{totalQuestions}</p>
       </div>
-      <div className="mb-4">
-        <img src={imageUrl} alt="Pokemon" className="mx-auto" />
+      <div className="mb-4 flex items-center space-x-6">
+        <p className="w-26"><span className="font-bold">Player 1:</span> {players[0]?.score || 0}</p>
+        <div className="flex-grow bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
+          <div
+            className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
+            style={{width: `${calculateProgressPercentage(players[0]?.score || 0)}%`}}
+          ></div>
+        </div>
       </div>
-      <div className="mb-4">
-        {options.map((option, index) => (
+      <div className="flex justify-center mt-4 mb-4 relative">
+        <Image
+          key={imageUrl}
+          src={imageUrl}
+          alt="Pokemon"
+          width={200}
+          height={200}
+          className="animate-fade-in"
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+        {options.map((option) => (
           <button
-            key={index}
+            key={option}
             onClick={() => handleOptionClick(option)}
-            className={`p-2 mx-2 ${
+            disabled={isRevealed}
+            className={`p-2 text-white rounded min-w-[200px] ${
               isRevealed
                 ? option === correctAnswer
-                  ? 'bg-green-500'
+                  ? 'bg-green-600'
                   : selectedOption === option
-                  ? 'bg-red-500'
-                  : 'bg-gray-300'
-                : selectedOption === option
-                ? 'bg-blue-700'
-                : 'bg-blue-500'
-            } text-white rounded hover:bg-blue-700`}
-            disabled={isRevealed}
+                  ? 'bg-red-600'
+                  : 'bg-gray-500'
+                : 'bg-blue-700 hover:bg-blue-900'
+            }`}
           >
             {option}
           </button>
         ))}
       </div>
-      <div className="mb-5 mt-8">
-        <p>Time left: {timeLeft} seconds</p>
-        <p>Question {currentQuestion} of {totalQuestions}</p>
+      <div className="mt-8 flex items-center space-x-6">
+        <p className="w-26"><span className="font-bold">Player 2:</span> {players[1]?.score || 0}</p>
+        <div className="flex-grow bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
+          <div 
+            className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
+            style={{width: `${calculateProgressPercentage(players[1]?.score || 0)}%`}}
+          ></div>
+        </div>
       </div>
       {(isRevealed && currentQuestion === totalQuestions) || gameOver ? (
         <div>
-          <p className="mt-4 text-lg">
+          <p className="mt-8 text-lg">
             <span className="font-bold">Game over!</span> 
             {players[0].score > players[1].score 
-              ? ` Player 1 wins with ${players[0].score} points!` 
+              ? ` Player 1 wins, with ${players[0].score} points!` 
               : players[1].score > players[0].score 
-              ? ` Player 2 wins with ${players[1].score} points!` 
+              ? ` Player 2 wins, with ${players[1].score} points!` 
               : " It's a tie!"}
           </p>
           <button
             onClick={() => router.push('/multiplayer')}
-            className="mt-4 p-2 mx-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="mt-4 p-2 mx-2 bg-green-600 text-white rounded hover:bg-green-700 -mb-10"
           >
             New Game
           </button>
