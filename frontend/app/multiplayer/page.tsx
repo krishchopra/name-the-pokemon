@@ -10,8 +10,9 @@ export default function MultiplayerPage() {
 
   const createGame = async () => {
     const newGameId = Math.random().toString(36).substring(2, 8);
-    const socket = io("http://localhost:3001");
-    
+    // const socket = io("http://localhost:3001"); -- for testing
+    const socket = io("https://name-the-pokemon.onrender.com");
+
     socket.on('connect', () => {
       console.log('Socket connected, creating game:', newGameId);
       socket.emit('createGame', newGameId);
