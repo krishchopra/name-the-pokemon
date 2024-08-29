@@ -104,9 +104,14 @@ io.on("connection", (socket) => {
       const playerIndex = game.players.findIndex(p => p.id === socket.id);
       if (playerIndex !== -1) {
         game.players.splice(playerIndex, 1);
-        io.to(gameId).emit("playerLeft", { gameId, players: game.players });
-        if (game.players.length === 0) {
-          games.delete(gameId);
+        if (game.currentQuestion === 1) {
+          io.to(gameId).emit("playerLeft", { gameId, players: game.players });
+        } else {
+          io.to(gameId).emit("playerLeft", { gameId, players: game.players });
+          if (game.players.length < 2) {
+            io.to(gameId).emit("gameOver", { players: game.players });
+            games.delete(gameId);
+          }
         }
       }
     });
@@ -128,8 +133,8 @@ io.on("connection", (socket) => {
       const newGameId = Math.random().toString(36).substring(2, 8);
       const { selectedPokemon, imageUrl } = await getRandomPokemon();
       const options = generateOptions(selectedPokemon);
-      games.set(newGameId, {
-        players: oldGame.players,
+      const newGame = {
+        players: oldGame.players.map((p: any) => ({ ...p, score: 0 })),
         currentPokemon: selectedPokemon,
         imageUrl,
         options,
@@ -137,12 +142,10 @@ io.on("connection", (socket) => {
         totalQuestions: 10,
         answeredPlayers: [],
         isProcessingNextRound: false,
-      });
+      };
+      games.set(newGameId, newGame);
       io.to(oldGameId).emit("rematchAccepted", newGameId, {
-        imageUrl,
-        options,
-        currentQuestion: 1,
-        totalQuestions: 10,
+        ...newGame,
         correctAnswer: selectedPokemon
       });
       games.delete(oldGameId);

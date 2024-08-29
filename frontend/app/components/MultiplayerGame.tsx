@@ -52,6 +52,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
 
     newSocket.on("gameJoined", (data) => {
       setPlayers(data.players);
+      preloadImage(data.imageUrl);
       setImageUrl(data.imageUrl);
       setOptions(data.options);
       if (data.players.length === 2) {
@@ -118,8 +119,10 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     newSocket.on("playerLeft", (data) => {
       if (data.gameId === gameId) {
         setPlayers(data.players);
-        if (data.players.length < 2) {
+        if (data.players.length < 2 && currentQuestion > 1) {
           setGameStatus("finished");
+        } else if (data.players.length < 2) {
+          setGameStatus("waiting");
         }
       }
     });
@@ -152,6 +155,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       setGameStatus("playing");
       setAllPlayersFinished(false);
       setRematchRequested(false);
+      setPlayers(gameData.players);
       router.push(`/multiplayer/${newGameId}`);
     });
 
@@ -159,6 +163,11 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       newSocket.disconnect();
     };
   }, [gameId]);
+
+  const preloadImage = (url: string) => {
+    const img = document.createElement("img");
+    img.src = url;
+  };
 
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
@@ -214,8 +223,10 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     if (socket) {
       if (rematchRequested) {
         socket.emit("acceptRematch", gameId);
+        setGameStatus("waiting");
       } else {
         socket.emit("requestRematch", gameId);
+        setRematchRequested(true);
         toast.info("Rematch requested. Waiting for opponent...");
       }
     }
@@ -276,13 +287,16 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           </div>
           <div className="mb-4 flex items-center space-x-6">
             <p className="w-26">
-              <span className="font-bold">Player 1:</span> {players[0]?.score || 0}
+              <span className="font-bold">Player 1:</span>{" "}
+              {players[0]?.score || 0}
             </p>
             <div className="flex-grow bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
               <div
                 className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out"
                 style={{
-                  width: `${calculateProgressPercentage(players[0]?.score || 0)}%`,
+                  width: `${calculateProgressPercentage(
+                    players[0]?.score || 0
+                  )}%`,
                 }}
               ></div>
             </div>
@@ -294,6 +308,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
               alt="Pokemon"
               width={200}
               height={200}
+              loading="eager"
               className={`animate-fade-in ${
                 showDoublePointsAlert ? "invisible" : "visible"
               }`}
@@ -321,13 +336,16 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           </div>
           <div className="mt-8 flex items-center space-x-6">
             <p className="w-26">
-              <span className="font-bold">Player 2:</span> {players[1]?.score || 0}
+              <span className="font-bold">Player 2:</span>{" "}
+              {players[1]?.score || 0}
             </p>
             <div className="flex-grow bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
               <div
                 className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out"
                 style={{
-                  width: `${calculateProgressPercentage(players[1]?.score || 0)}%`,
+                  width: `${calculateProgressPercentage(
+                    players[1]?.score || 0
+                  )}%`,
                 }}
               ></div>
             </div>
@@ -364,5 +382,3 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     </div>
   );
 }
-
-
