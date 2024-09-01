@@ -27,12 +27,14 @@ export default function DoublePointsAlert({
 
   return (
     <div
-      className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 transition-opacity duration-1000 ${
+      className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 transition-opacity duration-1000 px-4 ${
         visible ? "opacity-100" : "opacity-0"
       }`}
     >
-      <div className="bg-yellow-400 text-black text-3xl font-bold p-8 rounded-lg shadow-lg animate-pulse">
-        Final Question: 2x Points!
+      <div className="bg-yellow-400 text-black text-3xl font-medium p-8 rounded-lg shadow-lg animate-pulse max-w-sm w-full text-center">
+        Final Question
+        <br />
+        <span className="font-extrabold">2x Points!</span>
       </div>
     </div>
   );

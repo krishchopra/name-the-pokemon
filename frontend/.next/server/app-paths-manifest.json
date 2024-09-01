@@ -1,4 +1,5 @@
 {
-  "/multiplayer/page": "app/multiplayer/page.js",
-  "/multiplayer/[gameId]/page": "app/multiplayer/[gameId]/page.js"
+  "/multiplayer/[gameId]/page": "app/multiplayer/[gameId]/page.js",
+  "/single-player/page": "app/single-player/page.js",
+  "/page": "app/page.js"
 }

@@ -13,7 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [players, setPlayers] = useState<{ id: string; score: number }[]>([]);
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [pokemonNumber, setPokemonNumber] = useState<string>("");
   const [options, setOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -52,8 +52,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
 
     newSocket.on("gameJoined", (data) => {
       setPlayers(data.players);
-      preloadImage(data.imageUrl);
-      setImageUrl(data.imageUrl);
+      setPokemonNumber(data.pokemonNumber);
       setOptions(data.options);
       if (data.players.length === 2) {
         setGameStatus("playing");
@@ -62,7 +61,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
 
     newSocket.on("gameStarted", (data) => {
       setPlayers(data.players);
-      setImageUrl(data.imageUrl);
+      setPokemonNumber(data.pokemonNumber);
       setOptions(data.options);
       setGameStatus("countdown");
       setCountdown(5);
@@ -80,10 +79,10 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
         setShowDoublePointsAlert(true);
         setTimeout(() => {
           setShowDoublePointsAlert(false);
-          setImageUrl(data.imageUrl);
+          setPokemonNumber(data.pokemonNumber);
         }, 4500);
       } else {
-        setImageUrl(data.imageUrl);
+        setPokemonNumber(data.pokemonNumber);
       }
 
       if (data.currentQuestion > totalQuestions) {
@@ -145,7 +144,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     });
 
     newSocket.on("rematchAccepted", (newGameId, gameData) => {
-      setImageUrl(gameData.imageUrl);
+      setPokemonNumber(gameData.pokemonNumber);
       setOptions(gameData.options);
       setCurrentQuestion(gameData.currentQuestion);
       setCorrectAnswer(gameData.correctAnswer);
@@ -163,11 +162,6 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       newSocket.disconnect();
     };
   }, [gameId]);
-
-  const preloadImage = (url: string) => {
-    const img = document.createElement("img");
-    img.src = url;
-  };
 
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
@@ -303,8 +297,8 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           </div>
           <div className="flex justify-center mt-4 mb-1 relative">
             <Image
-              key={imageUrl}
-              src={imageUrl}
+              key={pokemonNumber}
+              src={`/images/${pokemonNumber}.png`}
               alt="Pokemon"
               width={200}
               height={200}
@@ -355,9 +349,9 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
               <p className="mt-8 text-lg">
                 <span className="font-bold">Game over!</span>
                 {players[0].score > players[1].score
-                  ? ` Player 1 wins, with ${players[0].score} points!`
+                  ? ` Player 1 wins, with ${players[0].score}/220 points!`
                   : players[1].score > players[0].score
-                  ? ` Player 2 wins, with ${players[1].score} points!`
+                  ? ` Player 2 wins, with ${players[1].score}/220 points!`
                   : " It's a tie!"}
               </p>
               <div className="mt-4 space-x-4">

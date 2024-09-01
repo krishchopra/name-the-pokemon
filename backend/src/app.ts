@@ -25,12 +25,12 @@ const games = new Map();
 io.on("connection", (socket) => {
 
   socket.on("createGame", async (gameId) => {
-    const { selectedPokemon, imageUrl } = await getRandomPokemon();
+    const { selectedPokemon, pokemonNumber } = await getRandomPokemon();
     const options = generateOptions(selectedPokemon);
     games.set(gameId, {
       players: [],
       currentPokemon: selectedPokemon,
-      imageUrl,
+      pokemonNumber,
       options,
       currentQuestion: 1,
       totalQuestions: 10,
@@ -46,9 +46,9 @@ io.on("connection", (socket) => {
       if (game.players.length < 2) {
         game.players.push({ id: socket.id, score: 0 });
         socket.join(gameId);
-        io.to(gameId).emit("gameJoined", { gameId, imageUrl: game.imageUrl, players: game.players, options: game.options });
+        io.to(gameId).emit("gameJoined", { gameId, pokemonNumber: game.pokemonNumber, players: game.players, options: game.options });
         if (game.players.length === 2) {
-          io.to(gameId).emit("gameStarted", { gameId, imageUrl: game.imageUrl, players: game.players, options: game.options });
+          io.to(gameId).emit("gameStarted", { gameId, pokemonNumber: game.pokemonNumber, players: game.players, options: game.options });
         }
       } else {
         socket.emit("gameFull");
@@ -131,12 +131,12 @@ io.on("connection", (socket) => {
     const oldGame = games.get(oldGameId);
     if (oldGame) {
       const newGameId = Math.random().toString(36).substring(2, 8);
-      const { selectedPokemon, imageUrl } = await getRandomPokemon();
+      const { selectedPokemon, pokemonNumber } = await getRandomPokemon();
       const options = generateOptions(selectedPokemon);
       const newGame = {
         players: oldGame.players.map((p: any) => ({ ...p, score: 0 })),
         currentPokemon: selectedPokemon,
-        imageUrl,
+        pokemonNumber,
         options,
         currentQuestion: 1,
         totalQuestions: 10,
@@ -159,14 +159,14 @@ async function nextRound(gameId) {
     game.isProcessingNextRound = true;
     game.currentQuestion++;
     if (game.currentQuestion <= game.totalQuestions) {
-      const { selectedPokemon, imageUrl } = await getRandomPokemon();
+      const { selectedPokemon, pokemonNumber } = await getRandomPokemon();
       const options = generateOptions(selectedPokemon);
       game.currentPokemon = selectedPokemon;
-      game.imageUrl = imageUrl;
+      game.pokemonNumber = pokemonNumber;
       game.options = options;
       game.answeredPlayers = [];
       io.to(gameId).emit("newRound", { 
-        imageUrl, 
+        pokemonNumber, 
         options, 
         currentQuestion: game.currentQuestion, 
         totalQuestions: game.totalQuestions,

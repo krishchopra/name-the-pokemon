@@ -1,9 +1,10 @@
 {
   "pages": {
-    "/multiplayer/page": [
+    "/multiplayer/[gameId]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/multiplayer/page.js"
+      "static/css/app/multiplayer/[gameId]/page.css",
+      "static/chunks/app/multiplayer/[gameId]/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -11,11 +12,15 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/multiplayer/[gameId]/page": [
+    "/single-player/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/multiplayer/[gameId]/page.css",
-      "static/chunks/app/multiplayer/[gameId]/page.js"
+      "static/chunks/app/single-player/page.js"
+    ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
     ]
   }
 }

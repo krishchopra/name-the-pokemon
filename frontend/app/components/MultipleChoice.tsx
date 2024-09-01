@@ -11,10 +11,10 @@ import DoublePointsAlert from './DoublePointsAlert';
 interface MultipleChoiceProps {
   correctAnswer: string;
   allPokemon: string[];
-  imageUrl: string;
+  pokemonNumber: string;
 }
 
-export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: MultipleChoiceProps) {
+export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumber }: MultipleChoiceProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
@@ -117,8 +117,8 @@ export default function MultipleChoice({ correctAnswer, allPokemon, imageUrl }: 
           />
           <div className="flex justify-center mt-4 mb-4 relative"> 
             <Image
-              key={imageUrl}
-              src={imageUrl}
+              key={pokemonNumber}
+              src={`/images/${pokemonNumber}.png`}
               alt={correctAnswer}
               width={200}
               height={200}
