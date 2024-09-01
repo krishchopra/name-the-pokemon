@@ -6,4 +6,5 @@ Test your Pokémon knowledge with this exciting game! Identify Pokémon from the
 - You'll be shown an image of a Pokémon
 - Choose the correct name from four options
 - Answer quickly for more points
-- Try to get the highest score possible!
+- Try to get the highest score possible
+- Single/multiplayer mode available!
