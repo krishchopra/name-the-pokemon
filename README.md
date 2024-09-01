@@ -1,4 +1,4 @@
-**Who's that Pokémon?**
+# Name the Pokémon
 
 Test your Pokémon knowledge with this exciting game! Identify Pokémon from their images, and earn points. Can you name them all?
 
