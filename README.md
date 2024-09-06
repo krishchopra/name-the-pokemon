@@ -9,4 +9,4 @@ Test your Pokémon knowledge with this exciting game! Identify Pokémon from the
 - Try to get the highest score possible
 - Single/multiplayer mode available!
 
-**Try it out at**: https://namethepokemon.vercel.app
+**Try it out at**: www.namethepokemon.com
