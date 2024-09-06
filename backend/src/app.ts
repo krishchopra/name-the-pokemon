@@ -12,7 +12,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production'
-      ? "https://namethepokemon.vercel.app"
+      ? "https://www.namethepokemon.com"
       : "http://localhost:3000",
     methods: ["GET", "POST"],
   },
