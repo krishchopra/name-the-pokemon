@@ -8,11 +8,13 @@ import SoundEffects from "./SoundEffects";
 import Image from "next/image";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import NameInput from './NameInput';
+import NameInput from "./NameInput";
 
 export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [players, setPlayers] = useState<{ id: string; score: number; disconnected?: boolean; name?: string }[]>([]);
+  const [players, setPlayers] = useState<
+    { id: string; score: number; disconnected?: boolean; name?: string }[]
+  >([]);
   const [pokemonNumber, setPokemonNumber] = useState<string>("");
   const [options, setOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -126,10 +128,12 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
 
     newSocket.on("playerLeft", (data) => {
       if (data.gameId === gameId) {
-        setPlayers(prevPlayers => prevPlayers.map(player => ({
-          ...player,
-          disconnected: player.id === data.disconnectedPlayerId
-        })));
+        setPlayers((prevPlayers) =>
+          prevPlayers.map((player) => ({
+            ...player,
+            disconnected: player.id === data.disconnectedPlayerId,
+          }))
+        );
         setGameStatus("finished");
       }
     });
@@ -252,7 +256,9 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     return (
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-4">Game not found!</h1>
-        <p className="text-lg mb-2">This game link is inactive or has expired.</p>
+        <p className="text-lg mb-2">
+          This game link is inactive or has expired.
+        </p>
         <button
           onClick={() => router.push("/multiplayer")}
           className="mt-8 py-2 px-6 bg-blue-500 text-white rounded-full hover:bg-blue-700 font-bold text-lg"
@@ -279,14 +285,16 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
         )}
         {gameStatus === "waiting" && !gameStarted && (
           <>
-            <p>Game ID: {gameId}</p>
+            <p className="mb-6 text-lg">Game ID: {gameId}</p>
             <NameInput onNameChange={handleNameChange} />
-            <button
-              onClick={handleCopyLink}
-              className="mt-8 p-2 px-4 bg-blue-600 text-white rounded-full hover:bg-blue-700"
-            >
-              Copy Game Link
-            </button>
+            <div className="flex justify-center">
+              <button
+                onClick={handleCopyLink}
+                className="mt-1 p-2 px-4 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+              >
+                Copy Game Link
+              </button>
+            </div>
           </>
         )}
         <ToastContainer />
@@ -305,7 +313,10 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           </p>
           {players.map((player, index) => (
             <p key={player.id} className="text-left">
-              <span className="font-bold">{player.name || `Player ${index + 1}`}:</span> {player.score} {player.disconnected ? "(Disconnected)" : ""}
+              <span className="font-bold">
+                {player.name || `Player ${index + 1}`}:
+              </span>{" "}
+              {player.score} {player.disconnected ? "(Disconnected)" : ""}
             </p>
           ))}
         </div>
@@ -331,7 +342,9 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           </div>
           <div className="mb-4 flex items-center space-x-6">
             <p className="w-26">
-              <span className="font-bold">{players[0]?.name || "Player 1"}:</span>{" "}
+              <span className="font-bold">
+                {players[0]?.name || "Player 1"}:
+              </span>{" "}
               {players[0]?.score || 0}
             </p>
             <div className="flex-grow bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
@@ -381,7 +394,9 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           </div>
           <div className="mt-8 flex items-center space-x-6">
             <p className="w-26">
-              <span className="font-bold">{players[1]?.name || "Player 2"}:</span>{" "}
+              <span className="font-bold">
+                {players[1]?.name || "Player 2"}:
+              </span>{" "}
               {players[1]?.score || 0}
             </p>
             <div className="flex-grow bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
@@ -400,9 +415,13 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
               <p className="mt-8 text-lg">
                 <span className="font-bold">Game over!</span>
                 {players[0].score > players[1].score
-                  ? ` ${players[0].name || "Player 1"} wins, with ${players[0].score} out of 220 points!`
+                  ? ` ${players[0].name || "Player 1"} wins, with ${
+                      players[0].score
+                    } out of 220 points!`
                   : players[1].score > players[0].score
-                  ? ` ${players[1].name || "Player 2"} wins, with ${players[1].score} out of 220 points!`
+                  ? ` ${players[1].name || "Player 2"} wins, with ${
+                      players[1].score
+                    } out of 220 points!`
                   : " It's a tie!"}
               </p>
               <div className="mt-4 flex flex-wrap justify-center">
