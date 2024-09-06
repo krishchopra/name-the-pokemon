@@ -41,7 +41,7 @@ io.on("connection", (socket) => {
     socket.emit("gameCreated", { gameId });
   });
 
-  socket.on("joinGame", async (gameId) => {
+  socket.on("joinGame", async ({ gameId, playerName }) => {
     const game = games.get(gameId);
     if (game) {
       if (game.players.length < 2) {
@@ -49,7 +49,9 @@ io.on("connection", (socket) => {
           (p: { id: string }) => p.id === socket.id
         );
         if (playerIndex === -1) {
-          game.players.push({ id: socket.id, score: 0 });
+          game.players.push({ id: socket.id, score: 0, name: playerName || `Player ${game.players.length + 1}` });
+        } else {
+          game.players[playerIndex].name = playerName || game.players[playerIndex].name;
         }
         socket.join(gameId);
         io.to(gameId).emit("gameJoined", {
@@ -72,7 +74,7 @@ io.on("connection", (socket) => {
         socket.emit("gameFull");
       }
     } else {
-      socket.emit("gameNotFound");
+      socket.emit("gameNotFound", { message: "Game not found or has expired." });
     }
   });
 
@@ -135,16 +137,13 @@ io.on("connection", (socket) => {
         (p: { id: string }) => p.id === socket.id
       );
       if (playerIndex !== -1) {
-        const disconnectedPlayer = game.players[playerIndex];
-        game.players.splice(playerIndex, 1);
+        game.players[playerIndex].disconnected = true;
         io.to(gameId).emit("playerLeft", {
           gameId,
-          players: [
-            ...game.players,
-            { ...disconnectedPlayer, disconnected: true },
-          ],
+          players: game.players,
+          disconnectedPlayerId: socket.id
         });
-        if (game.players.length < 2) {
+        if (game.players.filter((p: { disconnected: boolean }) => !p.disconnected).length < 2) {
           io.to(gameId).emit("gameOver", { players: game.players });
           games.delete(gameId);
         }
@@ -197,6 +196,19 @@ io.on("connection", (socket) => {
         gameStatus: "playing",
       });
       games.delete(oldGameId);
+    }
+  });
+
+  socket.on("updatePlayerName", ({ gameId, playerName }) => {
+    const game = games.get(gameId);
+    if (game) {
+      const player = game.players.find((p: { id: string }) => p.id === socket.id);
+      if (player) {
+        player.name = playerName;
+        io.to(gameId).emit("playerUpdated", {
+          players: game.players
+        });
+      }
     }
   });
 });

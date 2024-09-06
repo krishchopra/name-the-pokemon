@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import TimerAndScore from "./TimerAndScore";
-import BackgroundMusic from "./BackgroundMusic";
 import SoundEffects from "./SoundEffects";
 import DoublePointsAlert from "./DoublePointsAlert";
 
@@ -107,7 +106,6 @@ export default function MultipleChoice({
 
   return (
     <div className="text-center">
-      <BackgroundMusic />
       <SoundEffects ref={soundEffectsRef} />
       {showDoublePointsAlert ? (
         <DoublePointsAlert
@@ -170,7 +168,7 @@ export default function MultipleChoice({
                 onClick={() => {
                   window.location.reload();
                 }}
-                className="mt-4 p-2 mx-2 bg-green-600 text-white rounded hover:bg-green-700"
+                className="mt-5 p-2 mx-2 bg-green-600 text-white rounded hover:bg-green-700 font-bold"
               >
                 New Game
               </button>

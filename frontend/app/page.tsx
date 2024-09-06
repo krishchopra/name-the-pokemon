@@ -1,10 +1,8 @@
 import Link from 'next/link';
-import BackgroundMusic from './components/BackgroundMusic';
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-10 text-center">
-      <BackgroundMusic />
       <h1 className="text-4xl font-bold m-10">Name the Pokémon!</h1>
       <p className="text-xl mb-8 -mt-5">
         Test your Pokémon knowledge with this exciting game! Identify Pokémon from their images, and earn points. Can you name them all?
