@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 export default function Navbar() {
   return (
-    <nav className="top-0 left-0 right-0 flex justify-end items-center p-4 z-50">
+    <nav className="absolute top-0 right-0 p-5">
       <div className="flex items-center">
         <BackgroundMusic />
         <Link href="/" className="ml-4 hover:opacity-80 transition-opacity">
