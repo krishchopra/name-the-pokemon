@@ -9,6 +9,7 @@ import BackgroundMusic from "./BackgroundMusic";
 import Image from "next/image";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useHapticFeedback } from "../utils/useHapticFeedback";
 
 export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -32,6 +33,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [allPlayersFinished, setAllPlayersFinished] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [rematchRequested, setRematchRequested] = useState(false);
+  const { vibrate } = useHapticFeedback();
 
   const totalQuestions = 10;
   const maxScore = 220;
@@ -193,6 +195,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     setSelectedOption(option);
     setIsRevealed(true);
     submitAnswer(option);
+    vibrate();
   };
 
   const submitAnswer = (option: string | null) => {
@@ -306,6 +309,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
               className={`animate-fade-in ${
                 showDoublePointsAlert ? "invisible" : "visible"
               }`}
+              unoptimized={true}
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">

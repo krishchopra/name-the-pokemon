@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import TimerAndScore from './TimerAndScore';
-import BackgroundMusic from './BackgroundMusic';
-import SoundEffects from './SoundEffects';
-import DoublePointsAlert from './DoublePointsAlert';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import TimerAndScore from "./TimerAndScore";
+import BackgroundMusic from "./BackgroundMusic";
+import SoundEffects from "./SoundEffects";
+import DoublePointsAlert from "./DoublePointsAlert";
+import { useHapticFeedback } from "../utils/useHapticFeedback";
 
 interface MultipleChoiceProps {
   correctAnswer: string;
@@ -14,7 +15,11 @@ interface MultipleChoiceProps {
   pokemonNumber: string;
 }
 
-export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumber }: MultipleChoiceProps) {
+export default function MultipleChoice({
+  correctAnswer,
+  allPokemon,
+  pokemonNumber,
+}: MultipleChoiceProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
@@ -23,8 +28,12 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [gameOver, setGameOver] = useState(false);
   const router = useRouter();
-  const soundEffectsRef = useRef<{ playCorrectSound: () => void; playWrongSound: () => void } | null>(null);
+  const soundEffectsRef = useRef<{
+    playCorrectSound: () => void;
+    playWrongSound: () => void;
+  } | null>(null);
   const [showDoublePointsAlert, setShowDoublePointsAlert] = useState(false);
+  const { vibrate } = useHapticFeedback();
 
   const totalQuestions = 10;
 
@@ -47,7 +56,8 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
   const generateOptions = () => {
     const newOptions = [correctAnswer];
     while (newOptions.length < 4) {
-      const randomPokemon = allPokemon[Math.floor(Math.random() * allPokemon.length)];
+      const randomPokemon =
+        allPokemon[Math.floor(Math.random() * allPokemon.length)];
       if (!newOptions.includes(randomPokemon)) {
         newOptions.push(randomPokemon);
       }
@@ -59,6 +69,7 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
     if (isRevealed) return;
     setSelectedOption(option);
     setIsRevealed(true);
+    vibrate();
     if (option === correctAnswer) {
       let pointsEarned;
       if (timeLeft >= 9) {
@@ -66,12 +77,12 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
       } else {
         pointsEarned = timeLeft + 11;
       }
-      
+
       // double the points for the last question
       if (currentQuestion === totalQuestions) {
         pointsEarned *= 2;
       }
-      
+
       setScore(score + pointsEarned);
       soundEffectsRef.current?.playCorrectSound();
     } else {
@@ -80,10 +91,10 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
   };
 
   const getOptionClass = (option: string) => {
-    if (!isRevealed) return 'bg-blue-700 hover:bg-blue-900';
-    if (option === correctAnswer) return 'bg-green-600';
-    if (option === selectedOption) return 'bg-red-600';
-    return 'bg-gray-500';
+    if (!isRevealed) return "bg-blue-700 hover:bg-blue-900";
+    if (option === correctAnswer) return "bg-green-600";
+    if (option === selectedOption) return "bg-red-600";
+    return "bg-gray-500";
   };
 
   const handleNewPokemon = () => {
@@ -102,20 +113,22 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
       <BackgroundMusic />
       <SoundEffects ref={soundEffectsRef} />
       {showDoublePointsAlert ? (
-        <DoublePointsAlert onFinish={() => {
-          setShowDoublePointsAlert(false);
-          setCurrentQuestion(currentQuestion + 1);
-          router.refresh();
-        }} />
+        <DoublePointsAlert
+          onFinish={() => {
+            setShowDoublePointsAlert(false);
+            setCurrentQuestion(currentQuestion + 1);
+            router.refresh();
+          }}
+        />
       ) : (
         <>
-          <TimerAndScore 
-            timeLeft={timeLeft} 
-            score={score} 
-            totalQuestions={totalQuestions} 
-            currentQuestion={currentQuestion} 
+          <TimerAndScore
+            timeLeft={timeLeft}
+            score={score}
+            totalQuestions={totalQuestions}
+            currentQuestion={currentQuestion}
           />
-          <div className="flex justify-center mt-4 mb-4 relative"> 
+          <div className="flex justify-center mt-4 mb-4 relative">
             <Image
               key={pokemonNumber}
               src={`/images/${pokemonNumber}.png`}
@@ -123,6 +136,7 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
               width={200}
               height={200}
               className="animate-fade-in"
+              unoptimized={true}
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
@@ -131,7 +145,9 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
                 key={option}
                 onClick={() => handleOptionClick(option)}
                 disabled={isRevealed}
-                className={`p-2 text-white rounded min-w-[200px] ${getOptionClass(option)}`}
+                className={`p-2 text-white rounded min-w-[200px] ${getOptionClass(
+                  option
+                )}`}
               >
                 {option}
               </button>
@@ -142,13 +158,16 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
               onClick={handleNewPokemon}
               className="mt-10 p-2 mx-2 bg-blue-700 text-white rounded hover:bg-blue-900"
             >
-              {currentQuestion < totalQuestions ? "Next Pokémon" : "Finish Game"}
+              {currentQuestion < totalQuestions
+                ? "Next Pokémon"
+                : "Finish Game"}
             </button>
           )}
           {gameOver && (
             <div>
               <p className="mt-10 text-lg">
-                <span className="font-bold">Game over!</span> Your final score is {score} out of 220.
+                <span className="font-bold">Game over!</span> Your final score
+                is {score} out of 220.
               </p>
               <button
                 onClick={() => {
@@ -165,5 +184,3 @@ export default function MultipleChoice({ correctAnswer, allPokemon, pokemonNumbe
     </div>
   );
 }
-
-
