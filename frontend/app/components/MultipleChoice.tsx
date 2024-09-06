@@ -7,7 +7,6 @@ import TimerAndScore from "./TimerAndScore";
 import BackgroundMusic from "./BackgroundMusic";
 import SoundEffects from "./SoundEffects";
 import DoublePointsAlert from "./DoublePointsAlert";
-import { useHapticFeedback } from "../utils/useHapticFeedback";
 
 interface MultipleChoiceProps {
   correctAnswer: string;
@@ -33,7 +32,6 @@ export default function MultipleChoice({
     playWrongSound: () => void;
   } | null>(null);
   const [showDoublePointsAlert, setShowDoublePointsAlert] = useState(false);
-  const { vibrate } = useHapticFeedback();
 
   const totalQuestions = 10;
 
@@ -69,7 +67,6 @@ export default function MultipleChoice({
     if (isRevealed) return;
     setSelectedOption(option);
     setIsRevealed(true);
-    vibrate();
     if (option === correctAnswer) {
       let pointsEarned;
       if (timeLeft >= 9) {

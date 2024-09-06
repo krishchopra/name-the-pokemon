@@ -9,11 +9,10 @@ import BackgroundMusic from "./BackgroundMusic";
 import Image from "next/image";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useHapticFeedback } from "../utils/useHapticFeedback";
 
 export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [players, setPlayers] = useState<{ id: string; score: number }[]>([]);
+  const [players, setPlayers] = useState<{ id: string; score: number; disconnected?: boolean }[]>([]);
   const [pokemonNumber, setPokemonNumber] = useState<string>("");
   const [options, setOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -33,7 +32,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [allPlayersFinished, setAllPlayersFinished] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [rematchRequested, setRematchRequested] = useState(false);
-  const { vibrate } = useHapticFeedback();
+  const [gameStarted, setGameStarted] = useState(false);
 
   const totalQuestions = 10;
   const maxScore = 220;
@@ -56,9 +55,8 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       setPlayers(data.players);
       setPokemonNumber(data.pokemonNumber);
       setOptions(data.options);
-      if (data.players.length === 2) {
-        setGameStatus("playing");
-      }
+      setGameStatus("waiting");
+      setGameStarted(data.gameStarted);
     });
 
     newSocket.on("gameStarted", (data) => {
@@ -67,6 +65,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       setOptions(data.options);
       setGameStatus("countdown");
       setCountdown(5);
+      setGameStarted(true);
     });
 
     newSocket.on("newRound", (data) => {
@@ -120,11 +119,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     newSocket.on("playerLeft", (data) => {
       if (data.gameId === gameId) {
         setPlayers(data.players);
-        if (data.players.length < 2 && currentQuestion > 1) {
-          setGameStatus("finished");
-        } else if (data.players.length < 2) {
-          setGameStatus("waiting");
-        }
+        setGameStatus("finished");
       }
     });
 
@@ -195,7 +190,6 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     setSelectedOption(option);
     setIsRevealed(true);
     submitAnswer(option);
-    vibrate();
   };
 
   const submitAnswer = (option: string | null) => {
@@ -220,7 +214,9 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     if (socket) {
       if (rematchRequested) {
         socket.emit("acceptRematch", gameId);
-        setGameStatus("waiting");
+        setGameStatus("countdown");
+        setCountdown(5);
+        setRematchRequested(false);
       } else {
         socket.emit("requestRematch", gameId);
         setRematchRequested(true);
@@ -234,13 +230,15 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-4">
           {gameStatus === "waiting"
-            ? "Waiting for another player to join..."
+            ? gameStarted
+              ? "Waiting for the other player to rejoin..."
+              : "Waiting for another player to join..."
             : "Get ready! Match starts in..."}
         </h1>
         {gameStatus === "countdown" && (
           <div className="text-6xl font-bold mb-4">{countdown}</div>
         )}
-        {gameStatus === "waiting" && (
+        {gameStatus === "waiting" && !gameStarted && (
           <>
             <p>Game ID: {gameId}</p>
             <button
@@ -261,6 +259,16 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       <div className="text-center">
         <h1 className="text-2xl font-bold mb-4">Game Over!</h1>
         <p>The other player left the game.</p>
+        <div className="mt-10">
+          <p className="text-lg mb-3 text-left">
+            <span className="font-bold text-xl">Final Scores:</span>
+          </p>
+          {players.map((player, index) => (
+            <p key={player.id} className="text-left">
+              <span className="font-bold">Player {index + 1}:</span> {player.score} {player.disconnected ? "(Disconnected)" : ""}
+            </p>
+          ))}
+        </div>
       </div>
     );
   }
@@ -353,9 +361,9 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
               <p className="mt-8 text-lg">
                 <span className="font-bold">Game over!</span>
                 {players[0].score > players[1].score
-                  ? ` Player 1 wins, with ${players[0].score}/220 points!`
+                  ? ` Player 1 wins, with ${players[0].score} out of 220 points!`
                   : players[1].score > players[0].score
-                  ? ` Player 2 wins, with ${players[1].score}/220 points!`
+                  ? ` Player 2 wins, with ${players[1].score} out of 220 points!`
                   : " It's a tie!"}
               </p>
               <div className="mt-4 space-x-4">

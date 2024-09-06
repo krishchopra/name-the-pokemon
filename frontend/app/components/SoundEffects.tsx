@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef } from "react";
 
 const SoundEffects = forwardRef((props, ref) => {
   const correctSoundRef = useRef<HTMLAudioElement>(null);
@@ -22,6 +22,6 @@ const SoundEffects = forwardRef((props, ref) => {
   );
 });
 
-SoundEffects.displayName = 'SoundEffects';
+SoundEffects.displayName = "SoundEffects";
 
 export default SoundEffects;
