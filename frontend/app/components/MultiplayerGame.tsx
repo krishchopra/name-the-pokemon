@@ -8,7 +8,6 @@ import SoundEffects from "./SoundEffects";
 import Image from "next/image";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import GenerationSelector from './GenerationSelector';
 
 export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -35,7 +34,6 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [rematchRequested, setRematchRequested] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
-  const [selectedGenerations, setSelectedGenerations] = useState<number[]>([1]);
 
   const totalQuestions = 10;
   const maxScore = 220;
@@ -254,14 +252,6 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     }
   };
 
-  const handleGenerationToggle = (gen: number) => {
-    setSelectedGenerations((prev) =>
-      prev.includes(gen)
-        ? prev.filter((g) => g !== gen)
-        : [...prev, gen].sort((a, b) => a - b)
-    );
-  };
-
   if (gameStatus === "notFound") {
     return (
       <div className="text-center">
@@ -271,7 +261,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
         </p>
         <button
           onClick={() => router.push("/multiplayer")}
-          className="mt-8 py-2 px-5 bg-blue-500 text-white rounded-full hover:bg-blue-700 font-bold text-lg whitespace-nowrap"
+          className="mt-8 py-2 px-6 bg-blue-500 text-white rounded-full hover:bg-blue-700 font-bold text-lg whitespace-nowrap"
         >
           Back to Multiplayer Menu
         </button>
