@@ -317,6 +317,12 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
             </p>
           ))}
         </div>
+        <button
+          onClick={() => router.push("/multiplayer")}
+          className="mt-10 py-2 px-6 bg-blue-500 text-white rounded-full hover:bg-blue-700 font-bold text-lg whitespace-nowrap"
+        >
+          Back to Multiplayer Menu
+        </button>
       </div>
     );
   }
