@@ -176,7 +176,7 @@ io.on("connection", (socket) => {
       const { selectedPokemon, pokemonNumber } = await getRandomPokemon();
       const options = generateOptions(selectedPokemon);
       const newGame = {
-        players: oldGame.players.map((p: any) => ({ ...p, score: 0 })),
+        players: [],
         currentPokemon: selectedPokemon,
         pokemonNumber,
         options,
@@ -189,18 +189,42 @@ io.on("connection", (socket) => {
       };
       games.set(newGameId, newGame);
 
-      oldGame.players.forEach((player: { id: string }) => {
-        const playerSocket = io.sockets.sockets.get(player.id);
-        if (playerSocket) {
-          playerSocket.leave(oldGameId);
-          playerSocket.join(newGameId);
-          playerSocket.emit("rematchCreated", { gameId: newGameId });
-        }
-      });
+      const player1 = oldGame.players[0];
+      const player2 = oldGame.players[1];
+
+      const player1Socket = io.sockets.sockets.get(player1.id);
+      if (player1Socket) {
+        player1Socket.emit("createRematchGame", { gameId: newGameId });
+      }
+
+      const player2Socket = io.sockets.sockets.get(player2.id);
+      if (player2Socket) {
+        player2Socket.emit("joinRematchGame", { gameId: newGameId });
+      }
 
       games.delete(oldGameId);
       scheduleGameCleanup(newGameId);
     }
+  });
+
+  socket.on("createRematchGame", async () => {
+    const newGameId = Math.random().toString(36).substring(2, 8);
+    const { selectedPokemon, pokemonNumber } = await getRandomPokemon();
+    const options = generateOptions(selectedPokemon);
+    games.set(newGameId, {
+      players: [],
+      currentPokemon: selectedPokemon,
+      pokemonNumber,
+      options,
+      currentQuestion: 1,
+      totalQuestions: 3,
+      answeredPlayers: [],
+      isProcessingNextRound: false,
+      gameStarted: false,
+      createdAt: Date.now(),
+    });
+    socket.emit("rematchCreated", { gameId: newGameId });
+    scheduleGameCleanup(newGameId);
   });
 });
 
@@ -251,7 +275,10 @@ function scheduleGameCleanup(gameId: string) {
       if (game.players.length === 0 || !game.gameStarted) {
         games.delete(gameId);
         io.to(gameId).emit("gameExpired");
-      } else if (game.gameStarted && game.currentQuestion > game.totalQuestions) {
+      } else if (
+        game.gameStarted &&
+        game.currentQuestion > game.totalQuestions
+      ) {
         games.delete(gameId);
       }
     }

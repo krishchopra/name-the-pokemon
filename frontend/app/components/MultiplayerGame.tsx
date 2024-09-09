@@ -57,23 +57,12 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       toast.info("Opponent requested a rematch. Click 'Rematch' to accept.");
     });
 
-    newSocket.on("rematchAccepted", (newGameId) => {
+    newSocket.on("createRematchGame", ({ gameId: newGameId }) => {
       router.push(`/multiplayer/${newGameId}`);
     });
 
-    newSocket.on("rematchStarted", (gameData) => {
-      setPokemonNumber(gameData.pokemonNumber);
-      setOptions(gameData.options);
-      setCurrentQuestion(gameData.currentQuestion);
-      setCorrectAnswer(gameData.correctAnswer);
-      setIsRevealed(false);
-      setSelectedOption(null);
-      setTimeLeft(10);
-      setGameStatus("playing");
-      setAllPlayersFinished(false);
-      setRematchRequested(false);
-      setPlayers(gameData.players);
-      setGameStarted(true);
+    newSocket.on("joinRematchGame", ({ gameId: newGameId }) => {
+      router.push(`/multiplayer/${newGameId}`);
     });
 
     newSocket.on("gameCreated", (data) => {
@@ -185,11 +174,6 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       setGameStatus("notFound");
       toast.error("This game has expired. Please join or create a new game.");
       router.push("/multiplayer");
-    });
-
-    newSocket.on("rematchCreated", (data) => {
-      const newGameId = data.gameId;
-      router.push(`/multiplayer/${newGameId}`);
     });
 
     newSocket.on("gameStarted", (data) => {
@@ -354,7 +338,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
             </p>
           </div>
           <div className="mb-4 flex items-center space-x-6">
-            <p className="w-26">
+            <p className={`w-26 ${socket?.id === players[0]?.id ? 'text-yellow-600' : ''}`}>
               <span className="font-bold">Player 1:</span>{" "}
               {players[0]?.score || 0}
             </p>
@@ -404,7 +388,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
             ))}
           </div>
           <div className="mt-8 flex items-center space-x-6">
-            <p className="w-26">
+            <p className={`w-26 ${socket?.id === players[1]?.id ? 'text-yellow-600' : ''}`}>
               <span className="font-bold">Player 2:</span>{" "}
               {players[1]?.score || 0}
             </p>
