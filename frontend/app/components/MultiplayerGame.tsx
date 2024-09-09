@@ -8,12 +8,11 @@ import SoundEffects from "./SoundEffects";
 import Image from "next/image";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import NameInput from "./NameInput";
 
 export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [players, setPlayers] = useState<
-    { id: string; score: number; disconnected?: boolean; name?: string }[]
+    { id: string; score: number; disconnected?: boolean }[]
   >([]);
   const [pokemonNumber, setPokemonNumber] = useState<string>("");
   const [options, setOptions] = useState<string[]>([]);
@@ -35,19 +34,11 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [rematchRequested, setRematchRequested] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
-  const [playerName, setPlayerName] = useState<string>("");
 
   const totalQuestions = 10;
   const maxScore = 220;
   const calculateProgressPercentage = (score: number) =>
     (score / maxScore) * 100;
-
-  useEffect(() => {
-    const storedName = localStorage.getItem("playerName");
-    if (storedName) {
-      setPlayerName(storedName);
-    }
-  }, []);
 
   useEffect(() => {
     const socketUrl =
@@ -58,7 +49,42 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
-      newSocket.emit("joinGame", { gameId, playerName });
+      newSocket.emit("joinGame", { gameId });
+    });
+
+    newSocket.on("rematchRequested", () => {
+      setRematchRequested(true);
+      toast.info("Opponent requested a rematch. Click 'Rematch' to accept.");
+    });
+
+    newSocket.on("rematchAccepted", (newGameId) => {
+      router.push(`/multiplayer/${newGameId}`);
+    });
+
+    newSocket.on("rematchStarted", (gameData) => {
+      setPokemonNumber(gameData.pokemonNumber);
+      setOptions(gameData.options);
+      setCurrentQuestion(gameData.currentQuestion);
+      setCorrectAnswer(gameData.correctAnswer);
+      setIsRevealed(false);
+      setSelectedOption(null);
+      setTimeLeft(10);
+      setGameStatus("playing");
+      setAllPlayersFinished(false);
+      setRematchRequested(false);
+      setPlayers(gameData.players);
+      setGameStarted(true);
+    });
+
+    newSocket.on("gameCreated", (data) => {
+      setGameStatus("waiting");
+      setGameStarted(false);
+      setPlayers([]);
+      setPokemonNumber("");
+      setOptions([]);
+      setCurrentQuestion(1);
+      setAllPlayersFinished(false);
+      setRematchRequested(false);
     });
 
     newSocket.on("gameJoined", (data) => {
@@ -150,35 +176,35 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
       setAllPlayersFinished(true);
     });
 
-    newSocket.on("rematchRequested", () => {
-      setRematchRequested(true);
-      toast.info("Opponent requested a rematch. Click 'Rematch' to accept.");
-    });
-
-    newSocket.on("rematchAccepted", (newGameId, gameData) => {
-      setPokemonNumber(gameData.pokemonNumber);
-      setOptions(gameData.options);
-      setCurrentQuestion(gameData.currentQuestion);
-      setCorrectAnswer(gameData.correctAnswer);
-      setIsRevealed(false);
-      setSelectedOption(null);
-      setTimeLeft(10);
-      setGameStatus("playing");
-      setAllPlayersFinished(false);
-      setRematchRequested(false);
-      setPlayers(gameData.players);
-      router.push(`/multiplayer/${newGameId}`);
-    });
-
     newSocket.on("gameNotFound", (data) => {
       setGameStatus("notFound");
       toast.error(data?.message || "Game not found or has expired.");
     });
 
+    newSocket.on("gameExpired", () => {
+      setGameStatus("notFound");
+      toast.error("This game has expired. Please join or create a new game.");
+      router.push("/multiplayer");
+    });
+
+    newSocket.on("rematchCreated", (data) => {
+      const newGameId = data.gameId;
+      router.push(`/multiplayer/${newGameId}`);
+    });
+
+    newSocket.on("gameStarted", (data) => {
+      setPlayers(data.players);
+      setPokemonNumber(data.pokemonNumber);
+      setOptions(data.options);
+      setGameStatus("countdown");
+      setCountdown(5);
+      setGameStarted(true);
+    });
+
     return () => {
       newSocket.disconnect();
     };
-  }, [gameId]);
+  }, [gameId, router]);
 
   useEffect(() => {
     if (countdown !== null && countdown > 0) {
@@ -234,21 +260,11 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
     if (socket) {
       if (rematchRequested) {
         socket.emit("acceptRematch", gameId);
-        setGameStatus("countdown");
-        setCountdown(5);
-        setRematchRequested(false);
       } else {
         socket.emit("requestRematch", gameId);
         setRematchRequested(true);
         toast.info("Rematch requested. Waiting for opponent...");
       }
-    }
-  };
-
-  const handleNameChange = (newName: string) => {
-    setPlayerName(newName);
-    if (socket) {
-      socket.emit("updatePlayerName", { gameId, playerName: newName });
     }
   };
 
@@ -286,7 +302,6 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
         {gameStatus === "waiting" && !gameStarted && (
           <>
             <p className="mb-6 text-lg">Game ID: {gameId}</p>
-            <NameInput onNameChange={handleNameChange} />
             <div className="flex justify-center">
               <button
                 onClick={handleCopyLink}
@@ -313,9 +328,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           </p>
           {players.map((player, index) => (
             <p key={player.id} className="text-left">
-              <span className="font-bold">
-                {player.name || `Player ${index + 1}`}:
-              </span>{" "}
+              <span className="font-bold">{`Player ${index + 1}`}:</span>{" "}
               {player.score} {player.disconnected ? "(Disconnected)" : ""}
             </p>
           ))}
@@ -342,9 +355,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           </div>
           <div className="mb-4 flex items-center space-x-6">
             <p className="w-26">
-              <span className="font-bold">
-                {players[0]?.name || "Player 1"}:
-              </span>{" "}
+              <span className="font-bold">Player 1:</span>{" "}
               {players[0]?.score || 0}
             </p>
             <div className="flex-grow bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
@@ -394,9 +405,7 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
           </div>
           <div className="mt-8 flex items-center space-x-6">
             <p className="w-26">
-              <span className="font-bold">
-                {players[1]?.name || "Player 2"}:
-              </span>{" "}
+              <span className="font-bold">Player 2:</span>{" "}
               {players[1]?.score || 0}
             </p>
             <div className="flex-grow bg-gray-400 rounded-full h-2.5 dark:bg-gray-700">
@@ -415,13 +424,9 @@ export default function MultiplayerGame({ gameId }: { gameId: string }) {
               <p className="mt-8 text-lg">
                 <span className="font-bold">Game over!</span>
                 {players[0].score > players[1].score
-                  ? ` ${players[0].name || "Player 1"} wins, with ${
-                      players[0].score
-                    } out of 220 points!`
+                  ? ` Player 1 wins, with ${players[0].score} out of 220 points!`
                   : players[1].score > players[0].score
-                  ? ` ${players[1].name || "Player 2"} wins, with ${
-                      players[1].score
-                    } out of 220 points!`
+                  ? ` Player 2 wins, with ${players[1].score} out of 220 points!`
                   : " It's a tie!"}
               </p>
               <div className="mt-4 flex flex-wrap justify-center">

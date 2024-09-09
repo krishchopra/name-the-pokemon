@@ -37,11 +37,13 @@ io.on("connection", (socket) => {
       answeredPlayers: [],
       isProcessingNextRound: false,
       gameStarted: false,
+      createdAt: Date.now(),
     });
     socket.emit("gameCreated", { gameId });
+    scheduleGameCleanup(gameId);
   });
 
-  socket.on("joinGame", async ({ gameId, playerName }) => {
+  socket.on("joinGame", async ({ gameId }) => {
     const game = games.get(gameId);
     if (game) {
       if (game.players.length < 2) {
@@ -49,9 +51,7 @@ io.on("connection", (socket) => {
           (p: { id: string }) => p.id === socket.id
         );
         if (playerIndex === -1) {
-          game.players.push({ id: socket.id, score: 0, name: playerName || `Player ${game.players.length + 1}` });
-        } else {
-          game.players[playerIndex].name = playerName || game.players[playerIndex].name;
+          game.players.push({ id: socket.id, score: 0 });
         }
         socket.join(gameId);
         io.to(gameId).emit("gameJoined", {
@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
           options: game.options,
           gameStarted: game.gameStarted,
         });
-        if (game.players.length === 2 && !game.gameStarted) {
+        if (game.players.length === 2) {
           game.gameStarted = true;
           io.to(gameId).emit("gameStarted", {
             gameId,
@@ -69,12 +69,15 @@ io.on("connection", (socket) => {
             players: game.players,
             options: game.options,
           });
+          scheduleGameCleanup(gameId);
         }
       } else {
         socket.emit("gameFull");
       }
     } else {
-      socket.emit("gameNotFound", { message: "Game not found or has expired." });
+      socket.emit("gameNotFound", {
+        message: "Game not found or has expired.",
+      });
     }
   });
 
@@ -141,9 +144,12 @@ io.on("connection", (socket) => {
         io.to(gameId).emit("playerLeft", {
           gameId,
           players: game.players,
-          disconnectedPlayerId: socket.id
+          disconnectedPlayerId: socket.id,
         });
-        if (game.players.filter((p: { disconnected: boolean }) => !p.disconnected).length < 2) {
+        if (
+          game.players.filter((p: { disconnected: boolean }) => !p.disconnected)
+            .length < 2
+        ) {
           io.to(gameId).emit("gameOver", { players: game.players });
           games.delete(gameId);
         }
@@ -178,7 +184,8 @@ io.on("connection", (socket) => {
         totalQuestions: 10,
         answeredPlayers: [],
         isProcessingNextRound: false,
-        gameStarted: true,
+        gameStarted: false,
+        createdAt: Date.now(),
       };
       games.set(newGameId, newGame);
 
@@ -187,28 +194,12 @@ io.on("connection", (socket) => {
         if (playerSocket) {
           playerSocket.leave(oldGameId);
           playerSocket.join(newGameId);
+          playerSocket.emit("rematchCreated", { gameId: newGameId });
         }
       });
 
-      io.to(newGameId).emit("rematchAccepted", newGameId, {
-        ...newGame,
-        correctAnswer: selectedPokemon,
-        gameStatus: "playing",
-      });
       games.delete(oldGameId);
-    }
-  });
-
-  socket.on("updatePlayerName", ({ gameId, playerName }) => {
-    const game = games.get(gameId);
-    if (game) {
-      const player = game.players.find((p: { id: string }) => p.id === socket.id);
-      if (player) {
-        player.name = playerName;
-        io.to(gameId).emit("playerUpdated", {
-          players: game.players
-        });
-      }
+      scheduleGameCleanup(newGameId);
     }
   });
 });
@@ -251,6 +242,20 @@ function generateOptions(correctAnswer: string) {
     }
   }
   return options.sort(() => Math.random() - 0.5);
+}
+
+function scheduleGameCleanup(gameId: string) {
+  setTimeout(() => {
+    const game = games.get(gameId);
+    if (game) {
+      if (game.players.length === 0 || !game.gameStarted) {
+        games.delete(gameId);
+        io.to(gameId).emit("gameExpired");
+      } else if (game.gameStarted && game.currentQuestion > game.totalQuestions) {
+        games.delete(gameId);
+      }
+    }
+  }, 5 * 60 * 1000);
 }
 
 server.listen(port, () => {
